@@ -1,0 +1,185 @@
+-- Database: `AAT_database`
+CREATE DATABASE AAT_database;
+
+-- Table structure for table `accomTypeLookup`
+CREATE TABLE `accomTypeLookup` (
+  `type` char(15) NOT NULL,
+  PRIMARY KEY (`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `genderLookUp`
+CREATE TABLE `genderLookUp` (
+  `gender` char(1) NOT NULL,
+  `description` varchar(10) DEFAULT NULL,
+  PRIMARY KEY (`gender`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `qualificationLookUp`
+CREATE TABLE `qualificationLookUp` (
+  `qualification` char(15) NOT NULL,
+  PRIMARY KEY (`qualification`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `starRatingLookUp`
+CREATE TABLE `starRatingLookUp` (
+  `starRating` int(1) NOT NULL AUTO_INCREMENT COMMENT 'Star Rating Out of Five',
+  PRIMARY KEY (`starRating`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `statusLookUp`
+CREATE TABLE `statusLookUp` (
+  `status` char(15) NOT NULL,
+  PRIMARY KEY (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `tour`
+CREATE TABLE `tour` (
+  `tourDest` char(15) NOT NULL COMMENT 'Tour Destination',
+  `daysLength` int(1) NOT NULL COMMENT 'Tour''s length in days',
+  `maxGrpSize` int(2) NOT NULL COMMENT 'Maximum Group Size',
+  `startAgeRg` int(2) NOT NULL COMMENT 'Starting Age Range',
+  `endAgeRg` int(2) NOT NULL COMMENT 'Ending Age Range',
+  `costPerPerson` decimal(7,2) NOT NULL COMMENT 'Cost per Person',
+  `officialLang` varchar(15) NOT NULL COMMENT 'Official Language of the Tour',
+  PRIMARY KEY (`tourDest`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Tour Details';
+
+-- Table structure for table `staff`
+CREATE TABLE `staff` (
+  `staffID` char(4) NOT NULL COMMENT 'Staff Identification Number',
+  `staffName` varchar(50) NOT NULL COMMENT 'Staff Full Name',
+  `address` varchar(50) NOT NULL,
+  `phoneNo` varchar(14) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `hireDate` date NOT NULL COMMENT 'Date hired and started working',
+  `position` varchar(25) NOT NULL,
+  PRIMARY KEY (`staffID`),
+  UNIQUE KEY `phoneNo` (`phoneNo`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Staff Details';
+
+-- Table structure for table `client`
+CREATE TABLE `client` (
+  `clientID` char(4) NOT NULL COMMENT 'Client Identification Number',
+  `fName` varchar(25) NOT NULL COMMENT 'Client''s First Name',
+  `lName` varchar(25) NOT NULL COMMENT 'Client''s Last Name',
+  `DoB` date NOT NULL COMMENT 'Date of Birth',
+  `gender` varchar(1) NOT NULL,
+  `mobileNo` varchar(14) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `emergCont` varchar(14) NOT NULL COMMENT 'Client''s Emergency Contact Number',
+  PRIMARY KEY (`clientID`),
+  UNIQUE KEY `mobileNo` (`mobileNo`),
+  UNIQUE KEY `email` (`email`),
+  KEY `gender` (`gender`),
+  FOREIGN KEY (`gender`) REFERENCES `genderLookUp` (`gender`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Client Details';
+
+-- Table structure for table `accommodation`
+CREATE TABLE `accommodation` (
+  `accomNo` char(4) NOT NULL COMMENT 'Accommodation Number',
+  `accomName` varchar(30) DEFAULT NULL COMMENT 'Accommodation Name',
+  `address` varchar(50) NOT NULL COMMENT 'Accommodation Address',
+  `postcode` int(4) NOT NULL,
+  `state` varchar(3) NOT NULL,
+  `type` char(15) DEFAULT NULL COMMENT 'Hotel, Rental Company, or Private Person',
+  `starRating` int(1) DEFAULT NULL COMMENT 'Star Rating out of Five',
+  `URL` text NOT NULL COMMENT 'Accommodation Website',
+  PRIMARY KEY (`accomNo`),
+  UNIQUE KEY `URL` (`URL`) USING HASH,
+  KEY `type` (`type`),
+  KEY `starRating` (`starRating`),
+  FOREIGN KEY (`type`) REFERENCES `accomTypeLookup` (`type`),
+  FOREIGN KEY (`starRating`) REFERENCES `starRatingLookUp` (`starRating`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT= 'Accommodation Details';
+
+-- Table structure for table `guide`
+CREATE TABLE `guide` (
+  `guideRegNo` char(4) NOT NULL COMMENT 'Guide Registration Number',
+  `guideName` varchar(50) NOT NULL COMMENT 'Guide Full Name',
+  `regDate` date NOT NULL COMMENT 'Guide Registration Date',
+  `phoneNo` varchar(14) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `highestQual` varchar(15) DEFAULT NULL COMMENT 'Highest Qualification',
+  `yrsExperience` smallint(6) GENERATED ALWAYS AS (timestampdiff(YEAR,`regDate`,curdate())) VIRTUAL,
+  `hrlyRate` decimal(5,2) NOT NULL COMMENT 'Guide''s Hourly Rate',
+  `mentor` varchar(4) DEFAULT NULL COMMENT 'Guide Registration Number for Mentor (Foreign Key)',
+  `tourDest` varchar(15) NOT NULL COMMENT 'The tour that he/she guides (Foreign Key)',
+  PRIMARY KEY (`guideRegNo`),
+  UNIQUE KEY `phoneNo` (`phoneNo`),
+  UNIQUE KEY `email` (`email`),
+  KEY `mentor` (`mentor`),
+  KEY `highestQual` (`highestQual`),
+  KEY `tourDest` (`tourDest`),
+  FOREIGN KEY (`mentor`) REFERENCES `guide` (`guideRegNo`),
+  FOREIGN KEY (`tourDest`) REFERENCES `tour` (`tourDest`),
+  FOREIGN KEY (`highestQual`) REFERENCES `qualificationLookUp` (`qualification`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Guide Details';
+
+-- Table structure for table `booking`
+CREATE TABLE `booking` (
+  `bookingID` char(4) NOT NULL COMMENT 'Booking Identification Number',
+  `startDate` date NOT NULL COMMENT 'Tour Starting Date',
+  `endDate` date NOT NULL COMMENT 'Tour Ending Date',
+  `numOfParticipants` int(2) NOT NULL COMMENT 'Number of Participants for the Client',
+  `status` varchar(15) NOT NULL COMMENT 'Booking Status',
+  `comment` varchar(250) DEFAULT NULL,
+  `clientID` char(4) NOT NULL,
+  `guideRegNo` char(4) NOT NULL COMMENT 'The guide for the tour',
+  `tourDest` char(15) NOT NULL COMMENT 'Tour Destination',
+  `staffID` char(4) NOT NULL COMMENT 'Staff Member who processed the booking',
+  PRIMARY KEY (`bookingID`),
+  KEY `clientID` (`clientID`),
+  KEY `guideRegNo` (`guideRegNo`),
+  KEY `tourDest` (`tourDest`),
+  KEY `staffID` (`staffID`),
+  KEY `status` (`status`),
+  FOREIGN KEY (`clientID`) REFERENCES `client` (`clientID`),
+  FOREIGN KEY (`guideRegNo`) REFERENCES `guide` (`guideRegNo`),
+  FOREIGN KEY (`tourDest`) REFERENCES `tour` (`tourDest`),
+  FOREIGN KEY (`staffID`) REFERENCES `staff` (`staffID`),
+  FOREIGN KEY (`status`) REFERENCES `statusLookUp` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Booking Details';
+
+-- Table structure for table `itinerary`
+CREATE TABLE `itinerary` (
+  `bookingID` char(4) NOT NULL COMMENT 'The itinerary for the booking',
+  `date` date NOT NULL,
+  `depTime` time NOT NULL COMMENT 'Departure Time',
+  `depPoint` varchar(35) NOT NULL COMMENT 'Departure Point (location)',
+  `activitiesDescr` varchar(250) NOT NULL COMMENT 'Activties Description',
+  `accomNo` char(4) NOT NULL COMMENT 'The accommodation for the clients',
+  PRIMARY KEY (`bookingID`, `date`) USING BTREE,
+  KEY `accomNo` (`accomNo`),
+  FOREIGN KEY (`accomNo`) REFERENCES `accommodation` (`accomNo`),
+  FOREIGN KEY (`bookingID`) REFERENCES `booking` (`bookingID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Itinerary Details';
+
+-- Table structure for table `preference`
+CREATE TABLE `preference` (
+  `clientID` char(4) NOT NULL COMMENT 'Preference Belongs to the client',
+  `tourDest` char(15) NOT NULL COMMENT 'Preference is about the tour',
+  `prefAccomType` varchar(20) NOT NULL COMMENT 'Preferred Accommodation Type',
+  `starRating` int(1) DEFAULT NULL COMMENT 'Accommodation Star Rating Preferred',
+  `pointOfInterest` varchar(25) NOT NULL COMMENT 'Point (Location) Of Interest',
+  `comment` varchar(250) DEFAULT NULL,
+  PRIMARY KEY (`clientID`, `tourDest`) USING BTREE,
+  KEY `starRating` (`starRating`),
+  FOREIGN KEY (`clientID`) REFERENCES `client` (`clientID`),
+  FOREIGN KEY (`tourDest`) REFERENCES `tour` (`tourDest`),
+  FOREIGN KEY (`starRating`) REFERENCES `starRatingLookUp` (`starRating`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Preference Details';
+
+-- Table structure for table `review`
+CREATE TABLE `review` (
+  `clientID` char(4) NOT NULL COMMENT 'Client who reviewed',
+  `tourDest` char(15) NOT NULL COMMENT 'Review is about the tour.',
+  `reviewDate` date NOT NULL COMMENT 'Date reviewed',
+  `overallRating` int(1) NOT NULL COMMENT 'Overall Rating of the tour out of five',
+  `comment` varchar(250) DEFAULT NULL,
+  PRIMARY KEY (`clientID`, `tourDest`),
+  KEY `overallRating` (`overallRating`),
+  FOREIGN KEY (`clientID`) REFERENCES `client` (`clientID`),
+  FOREIGN KEY (`tourDest`) REFERENCES `tour` (`tourDest`),
+  FOREIGN KEY (`overallRating`) REFERENCES `starRatingLookUp` (`starRating`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Review Details';

@@ -1,0 +1,55 @@
+SQL Queries
+
+SQL #1
+SELECT staffName 'Staff Name', email Email, phoneNo AS 'Contact Number'
+FROM staff
+WHERE position = 'Receptionist'
+ORDER BY staffName DESC;
+
+SQL #2
+SELECT accomName 'Accommodation Name', address Address, type AS 'Accommodation Type'
+FROM accommodation
+WHERE address LIKE '%BATEMANS BAY%'
+ORDER BY accomName ASC, starRating DESC;
+
+SQL #3
+SELECT tourDest 'Tour Destination', daysLength 'Length (Days)', CONCAT(startAgeRg, ' - ',endAgeRg) AS 'Age Range'
+FROM tour
+WHERE officialLang IN ('English', 'Mandarin') AND costPerPerson<=500;
+
+SQL #4
+SELECT guideName 'Guide Name', regDate 'Registration Date', tourDest AS 'Tour Destination'
+FROM guide
+WHERE highestQual IS NULL AND hrlyRate>35;
+
+SQL #5
+SELECT g.guideName 'Mentor Name', g.hrlyRate 'Hourly Rate', COUNT(m.mentor) AS Mentees
+FROM guide g INNER JOIN guide m ON g.guideRegNo=m.mentor
+GROUP BY m.mentor
+
+SQL #6
+SELECT date Date, depTime 'Departure Time', depPoint Location, accommodation.accomName 'Accommodation Name', CONCAT(address, ' ', state, ' ', postcode) AS Address
+FROM itinerary JOIN accommodation ON itinerary.accomNo=accommodation.accomNo
+WHERE starRating = 4;
+
+SQL #7
+SELECT DISTINCT position AS 'Staff Position'
+FROM booking, staff
+WHERE booking.staffID = staff.staffID;
+
+SQL #8
+SELECT client.clientID, CONCAT(fName, ' ', lName) 'Client Name', tourDest 'Tour Destination', prefAccomType 'Preferred Accommodation Type', starRating 'Star Rating', pointOfInterest 'Point of Interest', comment AS Comment
+FROM preference RIGHT JOIN client ON client.clientID=preference.clientID;
+
+SQL #9
+SELECT booking.tourDest 'Tour Destination', startDate 'Start Date', endDate 'End Date', (tour.costPerPerson*booking.numOfParticipants) AS 'Total Cost'
+FROM booking, tour
+WHERE booking.tourDest=tour.tourDest AND status = 'In-progress';
+
+SQL #10
+SELECT tour.*
+FROM tour, review
+WHERE tour.tourDest=review.tourDest
+GROUP BY tourDest
+HAVING AVG(overallRating >= 2.5)
+ORDER BY daysLength;
